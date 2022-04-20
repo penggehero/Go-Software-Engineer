@@ -256,3 +256,68 @@ unzip file.zip            // 解压 zip
 - groupadd 新建用户组
 - groupdel 删除用户组
 
+## 网络管理
+
+- 网络状态查看
+- 网络配置
+- 路由命令
+- 网络故障排除
+- 网络服务管理
+- 常用网络配置文件
+
+## 网络状态查看
+
+net-tools vs iproute
+
+### 1.net-tools
+
+- ifconfig
+- route
+- netstat
+
+### 2.iproute2
+
+- ip
+- ss
+
+## ifconfig 
+
+- etho第一块网卡（网络接口)
+- 你的第一个网络接口可能叫做下面的名字. eno1板载网卡.
+  - ens33 PCl-E网卡
+  - enp0s3无法获取物理信息的PCI-E网卡
+  - centOS 7使用了一致性网络设备命名，以上都不匹配则使用etho
+
+## 网络接口命名修改
+
+- 网卡命名规则受biosdevname和net.ifnames两个参数影响
+
+- 编辑/etc/default/grub文件，增加biosdevname=0 net.ifnames=0
+
+- 更新grub
+
+   grub2-mkconfig -o /boot/grub2/grub.cfg
+
+
+- 重启
+
+  reboot
+
+  |       | biosdevname | net.ifnames | 网卡名 |
+  | :---: | :---------: | :---------: | :----: |
+  | 默认  |      0      |      1      | ens33  |
+  | 组合1 |      1      |      0      |  em1   |
+  | 组合2 |      0      |      0      |  eth0  |
+
+
+
+## 查看网卡物理连接情况
+
+- mii-tool eth0
+
+## 查看网关
+
+- route -n
+- 使用-n参数不解析主机名
+
+ 
