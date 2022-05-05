@@ -338,9 +338,21 @@ user3 ALL=/sbin/shutdown -c
 - rx 显示目录内的文件名
 - wx 修改目录内的文件名
 
+## 修改权限命令
 
+- chmod 修改文件、目录权限
+  - chmod   u+x    /tmp/testfile
+  - chmod    755    /tmp/testfile
+- chown 更改属主、属组
+- chgrp 可以单独更改属组，不常用
 
+## 特殊权限
 
+- SUID 用于二进制可执行文件，执行命令时取得文件属主权限
+  - 如 `usr/bin/passwd`
+- SGID 用于目录，在该目录下创建新的文件和目录，权限自动更改为该目录的属组
+- SBIT  用于目录，该目录下新建的文件和目录，仅root和自己可以删除
+  - 如 /tmp
 
 
 
@@ -371,10 +383,12 @@ net-tools vs iproute
 ## ifconfig 
 
 - etho第一块网卡（网络接口)
-- 你的第一个网络接口可能叫做下面的名字. eno1板载网卡.
-  - ens33 PCl-E网卡
-  - enp0s3无法获取物理信息的PCI-E网卡
-  - centOS 7使用了一致性网络设备命名，以上都不匹配则使用etho
+
+- 你的第一个网络接口可能叫做下面的名字
+  - eno1           板载网卡
+  - ens33         PCl-E网卡
+  - enp0s3       无法获取物理信息的PCI-E网卡
+  - centOS 7    使用了一致性网络设备命名，以上都不匹配则使用etho
 
 ## 网络接口命名修改
 
@@ -408,4 +422,156 @@ net-tools vs iproute
 - route -n
 - 使用-n参数不解析主机名
 
- 
+##  网络配置命令
+
+- ifconfig <接口> <ip 地址>[netmask 子网掩码]  修改网卡配置
+
+  ```sh
+  ifconfig eth0 10.211.55.4 netmask 255.255.255.0 #修改 eth0 的ip和子网掩码
+  ```
+
+- ifup <接口>  开启网卡
+
+  ```sh
+  ifup eth0
+  ```
+
+- ifdown <接口> 关闭网卡
+  ```sh
+  ifdown eth0
+  ```
+
+## 网关配置命令
+
+- route add default gw <网关ip>
+- route add -host <指定ip> gw <网关ip>
+- route add -net <指定网段> netmask <子网掩码>  gw <网关ip>
+
+例子（修改默认网关）
+
+![image-20220505082423491](images/image-20220505082423491.png)
+
+```sh
+route  del default gw 10.211.55.1  # 先删除默认网关
+route add default gw 10.211.55.2   # 再添加新网关
+route add -host 10.0.0.1 gw 10.211.55.1  # 指定ip的网关
+route add-net 192.168.0.0 netmask 255.255.255.0 gw 10.211.55.1  # 指定网端的网关
+```
+
+## 网络故障排除命令
+
+- ping    
+
+  ```
+   ping 命令用于检测主机。
+  执行 ping 指令会使用 ICMP 传输协议，发出要求回应的信息，若远端主机的网络功能没有问题，就会回应该信息，因而得知该主机运作正常。
+  ```
+
+- traceroute
+
+  ```sh
+  traceroute命令用于显示数据包到主机间的路径。
+  traceroute指令让你追踪网络数据包的路由途径，预设数据包大小是40Bytes，用户可另行设置。
+  ```
+
+- mtr
+
+  ```
+  mtr在单个网络诊断工具中结合了traceroute和ping程序的功能。当mtr启动时，它调查运行在主机mtr和主机名之间的网络连接。
+  
+  通过发送有目的的低TTL的包。它继续以较低的TTL发送数据包，记录中间路由器。这允许MTR打印Internet路由的响应百分比和响应时间。到主机名。包丢失或响应时间的突然增加通常是坏的（或仅仅是过度的）迹象。已加载）链接。结果通常以往返响应时间（毫秒）和包丢失百分比报告。
+  ```
+
+- nslookup
+
+  ```
+  nslookup命令用于查询DNS的记录，查看域名解析是否正常，在网络故障的时候用来诊断网络问题。
+  ```
+
+- telnet
+
+  ```
+  telnet命令用于远端登入和远程ip端口检测。
+  检测 百度的80端口
+  telnet www.baidu.com 80
+  
+  
+  执行telnet指令开启终端机阶段作业，并登入远端主机。
+  ```
+
+- tcpdump
+
+  ```
+  tcpdump命令用于倾倒网络传输数据。
+  
+  抓取任意网卡的的80端口
+  tcpdump -i any -n port 80
+  -i<网络界面> 使用指定的网络截面送出数据包。
+  -n 不把主机的网络地址转换成名字。
+  
+  执行tcpdump指令可列出经过指定网络界面的数据包文件头，在Linux操作系统中，你必须是系统管理员。
+  ```
+
+- netstat
+
+  ```
+  netstat 命令用于显示网络状态。
+  
+  利用 netstat 指令可让你得知整个 Linux 系统的网络情况。
+  ```
+
+- ss
+
+  ```
+  ss是Socket Statistics的缩写。ss命令用来显示处于活动状态的套接字信息。它可以显示和netstat类似的内容。但ss的优势在于它能够显示更多更详细的有关TCP和连接状态的信息，而且比netstat更快速更高效。
+  ```
+
+## 网络服务管理
+
+网络服务管理程序分为两种，分别为SysV和systemd
+
+- service network start|stop|restart
+- chkconfig --list network
+- systemctl list-unit-files NetworkManager.service
+- systemctl start|stop|restart NetworkManger
+- systemctl enable|disable NetworkManger
+
+## 网络配置文件
+
+- ifcfg-eth0 网卡配置
+- /etc/hosts 域名设置
+
+```
+# 查看网络状态
+service network status
+# 重启网络昨天
+service network restart
+# 查看network服务
+chkconfig --list network
+# 关闭network服务
+chkconfig --level 2345 network off
+# 关闭NetworkManger服务
+systemctl  disable  NetworkManger
+# hostname 修改主机名
+hostname myname
+hostnamectl set-hostname  myname 永久生效
+```
+
+## 软件安装
+
+## 软件包管理器
+
+包管理器是方便软件安装、卸载，解决软件依赖关系的重要工具
+
+- Centos、RedHat使用yum包管理器，软件安装包格式为rpm
+- Debian、Ubuntu使用apt包管理器，软件安装包格式为deb
+
+### rpm包
+
+![image-20220505091324210](images/image-20220505091324210.png)
+
+rpm 命令
+
+- -q 查询软件包
+- -i 安装软件包
+- -e 卸载软件包
