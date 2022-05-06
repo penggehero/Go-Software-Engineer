@@ -575,3 +575,100 @@ rpm 命令
 - -q 查询软件包
 - -i 安装软件包
 - -e 卸载软件包
+
+## yum 包管理器
+
+rpm 包的问题
+
+- 需要自己解决依赖关系
+- 软件包来源不可靠
+
+Centos yum 源
+
+https://mirror.centos.org/centos/7/
+
+国内 yum源
+
+https://developer.aliyun.com/mirror
+
+### yum 配置文件
+
+- /etc/yum.repos.d/CentOS-Base.repo 
+
+- wget -O /etc/yum.repos.d/CentOS-Base.repo https://mirrors.aliyun.com/repo/Centos-7.repo
+
+### yum 命令常用选型
+
+- install     安装软件包
+- remove  卸载软件包
+- list |  grouplist 查看软件包
+- update       升级软件包
+
+替换阿里源包
+
+```sh
+1. 备份
+mv /etc/yum.repos.d/CentOS-Base.repo /etc/yum.repos.d/CentOS-Base.repo.backup
+2. 下载新的 CentOS-Base.repo 到 /etc/yum.repos.d/
+wget -O /etc/yum.repos.d/CentOS-Base.repo https://mirrors.aliyun.com/repo/Centos-7.repo
+3. 运行 yum makecache 生成缓存
+yum makecache
+```
+
+## 其他方式安装
+
+- 二进制安装
+- 源代码编译安装
+  - wget https://openresty.org/download/openresty-1.15.8.1.tar.gz
+  - tar -zxf openresty-VERSION.tar.gz
+  - cd openresty-VERSION/
+  - ./configure --prefix=/usr/local/openresy
+  - make -j2
+  - make install 
+
+## 升级内核
+
+rpm 格式内核
+
+- 查看内核版本
+  - uname -r
+- 升级内核版本
+  - yum install kernel-3.10.0
+- 升级已安装的其他软件包和补丁
+  - yum update
+
+源代码编译安装内核
+
+- 安装依赖包 
+  - yum install gcc gcc-c++ make ncurses-devel openssl-devel elfutils-libelf-devel
+- 下载并解压内核
+  - https://www.kernel.org
+  - tar xvf liunx-5.1.10.tar.xz -C /usr/src/kernels
+
+- 配置内核编译参数
+  - cd /usrlsrc/kernels/linux-5.1.10/
+  - make menuconfig | allyesconfig | allnoconfig
+- 使用当前系统内核配置
+  - cp / boot/config-kernelversion.platform /usrlsrc/kernels/linux-5.1.10/.config
+- 查看CPU
+  - lscpu
+- 编译
+  - make -j2 all
+- 安装内核
+  - make modules_install
+  - make install
+
+## grub 配置文件
+
+grub 是什么
+
+grub 配置文件
+
+- /etc/default/grub
+- /etc/grub.d/
+- / boot/grub2/grub.cfg
+- grub2-mkconfig -o /boot/grub2/grub.cfg
+
+使用单用户进入系统 （忘记root密码）
+
+## 进程管理
