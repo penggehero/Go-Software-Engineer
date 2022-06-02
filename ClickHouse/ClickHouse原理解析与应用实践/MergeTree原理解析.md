@@ -360,7 +360,7 @@ INDEX indexname expr TYPE indextype(...) GRANULARITY granularity
 
 ![跳数索引granularity与index_granularity的关系](images/%E8%B7%B3%E6%95%B0%E7%B4%A2%E5%BC%95granularity%E4%B8%8Eindex_granularity%E7%9A%84%E5%85%B3%E7%B3%BB.png)
 
-跳数索引的类型
+### 跳数索引的类型
 
 目前，MergeTree共支持4种跳数索引，分别是minmax、set、ngrambf_v1和tokenbf_v1。一张数据表支持同时声明多个跳数索引，例如：
 
