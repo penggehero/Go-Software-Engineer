@@ -762,3 +762,110 @@ C程序的启动是从main函数开始的
   - SIGINT   通知前台进程组终止进程 ctrl+ c
   - SIGKILL  立即结束程序，不能被阻塞和处理  kill -9 pid
 
+## 守护进程
+
+守护进程也称为精灵进程(Daemon)，是一个在后台运行且不受任何终端控制的特殊进程，用于执行特定的系统任务。很多守护进程在系统引导的时候启动，并且一直运行直到系统关闭。另一些只在需要的时候才启动，完成任务后就自动结束。
+
+它独立于控制终端并且周期性的执行某种发生的事件。守护进程是一种很有用的进程。Linux的大多数服务器就是用守护进程实现的。
+
+Linux系统启动时会启动很多系统服务进程，这些系统服务进程没有控制终端，不能直接和用户交互。其他进程都是在用户登录或运行程序时创建，在运行结束或用户注销时终止，但系统服务进程(守护进程)不受用户登录注销的影响，它们一直在运行着。这种进程有一个名称叫守护进程(Daemon)。
+
+**守护进程的特点**
+
+(1)在Linux中，每个系统与用户进行交流的界面成为终端，每一个从此终端开始运行的进程都会依附于这个终端，这个终端被称为这些进程的控制终端；
+
+(2)当控制终端被关闭的时候，相应的进程都会自动关闭。但是守护进程却能突破这种限制，它脱离于终端并且在后台运行，(脱离终端的目的是为了避免进程在运行的过程中的信息在任何终端中显示并且进程也不会被任何终端所产生的终端信息所打断)，它从被执行的时候开始运转，直到整个系统关闭才退出(当然可以认为是杀死相应的守护进程)；
+
+(3)如果想让某个进程不因为用户或中断或其他变化而影响，那么就必须把这个进程变成一个守护进程。
+
+## screen命令
+
+Linux screen命令用于多重视窗管理程序。
+
+screen为多重视窗管理程序。此处所谓的视窗，是指一个全屏幕的文字模式画面。通常只有在使用telnet登入主机或是使用老式的终端机时，才有可能用到screen程序。
+
+创建 screen 终端
+
+```sh
+screen 
+```
+
+创建 screen 终端 并执行任务
+
+```sh
+screen vi ~/main.c //创建 screen 终端 ，并执行 vi命令
+```
+
+离开 screen 终端
+
+```
+在 screen 终端 下 按下 Ctrl+a d键
+```
+
+重新连接离开的 screen 终端
+
+```sh
+screen -ls  //显示已创建的screen终端 
+There are screens on:
+2433.pts-3.linux    (2013年10月20日 16时48分59秒)    (Detached)
+2428.pts-3.linux    (2013年10月20日 16时48分05秒)    (Detached)
+2284.pts-3.linux    (2013年10月20日 16时14分55秒)    (Detached)
+2276.pts-3.linux    (2013年10月20日 16时13分18秒)    (Detached)
+4 Sockets in /var/run/screen/S-root.
+
+screen -r 2276 //连接 screen_id 为 2276 的 screen终端
+```
+
+## 系统日志
+
+```sh
+/var/log
+```
+
+## systemctl 服务管理工具
+
+Systemctl是一个systemd工具，主要负责控制systemd系统和服务管理器。
+
+Systemd是一个系统管理守护进程、工具和库的集合，用于取代System V初始进程。Systemd的功能是用于集中管理和配置类UNIX系统。
+
+systemctl 命令有两大类功能：
+
+1. 控制 systemd 系统
+2. 管理系统上运行的服务
+
+管理单个unit 
+
+systemctl 提供了一组子命令来管理单个的 unit，其命令格式为：
+
+`systemctl [command] [unit]`
+
+```sh
+command 主要有：
+start：立刻启动后面接的 unit。
+stop：立刻关闭后面接的 unit。
+restart：立刻关闭后启动后面接的 unit，亦即执行 stop 再 start 的意思。
+reload：不关闭 unit 的情况下，重新载入配置文件，让设置生效。
+enable：设置下次开机时，后面接的 unit 会被启动。
+disable：设置下次开机时，后面接的 unit 不会被启动。
+status：目前后面接的这个 unit 的状态，会列出有没有正在执行、开机时是否启动等信息。
+is-active：目前有没有正在运行中。
+is-enable：开机时有没有默认要启用这个 unit。
+kill ：不要被 kill 这个名字吓着了，它其实是向运行 unit 的进程发送信号。
+show：列出 unit 的配置。
+mask：注销 unit，注销后你就无法启动这个 unit 了。
+unmask：取消对 unit 的注销。
+```
+
+所有的*.service 文件都存放在`/lib/systemd/system`目录下面,
+
+## SELinux 简介
+
+- MAC (强制访问控制)与DAC (自主访问控制)
+- 查看SELinux的命令
+  - getenforce
+  - /usr/sbin/sestatus
+  - ps-Z and ls-Z and id -Z
+- 关闭SELinux
+  - setenforce 0
+  - /etc/selinux/sysconfig
+
