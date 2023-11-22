@@ -8,13 +8,13 @@
 
 ## 介绍
 
-**意图：**避免请求发送者与接收者耦合在一起，让多个对象都有可能接收请求，将这些对象连接成一条链，并且沿着这条链传递请求，直到有对象处理它为止。
+**意图：** 避免请求发送者与接收者耦合在一起，让多个对象都有可能接收请求，将这些对象连接成一条链，并且沿着这条链传递请求，直到有对象处理它为止。
 
-**主要解决：**职责链上的处理者负责处理请求，客户只需要将请求发送到职责链上即可，无须关心请求的处理细节和请求的传递，所以职责链将请求的发送者和请求的处理者解耦了。
+**主要解决：** 职责链上的处理者负责处理请求，客户只需要将请求发送到职责链上即可，无须关心请求的处理细节和请求的传递，所以职责链将请求的发送者和请求的处理者解耦了。
 
-**何时使用：**在处理消息的时候以过滤很多道。
+**何时使用：** 在处理消息的时候以过滤很多道。
 
-**如何解决：**拦截的类都实现统一接口。
+**如何解决：** 拦截的类都实现统一接口。
 
 **优点：** 
 
@@ -169,3 +169,147 @@ func TestChainOfResponsibility(t *testing.T) {
 	loggers.LogMessage(ERROR, "This is an error information.")
 }
 ```
+
+
+
+# 命令模式
+
+命令模式（Command Pattern）是一种数据驱动的设计模式，它属于行为型模式。请求以命令的形式包裹在对象中，并传给调用对象。调用对象寻找可以处理该命令的合适的对象，并把该命令传给相应的对象，该对象执行命令。
+
+## 介绍
+
+**意图：**  将一个请求封装成一个对象，从而使您可以用不同的请求对客户进行参数化。
+
+**主要解决： ** 在软件系统中，行为请求者与行为实现者通常是一种紧耦合的关系，但某些场合，比如需要对行为进行记录、撤销或重做、事务等处理时，这种无法抵御变化的紧耦合的设计就不太合适。
+
+**何时使用：**  在某些场合，比如要对行为进行"记录、撤销/重做、事务"等处理，这种无法抵御变化的紧耦合是不合适的。在这种情况下，如何将"行为请求者"与"行为实现者"解耦？将一组行为抽象为对象，可以实现二者之间的松耦合。
+
+**如何解决：**  通过调用者调用接受者执行命令，顺序：调用者→命令→接受者。
+
+**关键代码：**  定义三个角色：
+
+1、received 真正的命令执行对象 
+
+2、Command 
+
+3、invoker 使用命令对象的入口
+
+**应用实例：**  struts 1 中的 action 核心控制器 ActionServlet 只有一个，相当于 Invoker，而模型层的类会随着不同的应用有不同的模型类，相当于具体的 Command。
+
+**优点：**  1、降低了系统耦合度。 2、新的命令可以很容易添加到系统中去。
+
+**缺点：**  使用命令模式可能会导致某些系统有过多的具体命令类。
+
+**注意事项：** 系统需要支持命令的撤销(Undo)操作和恢复(Redo)操作，也可以考虑使用命令模式，见命令模式的扩展。
+
+```go
+package design_pattern
+
+import (
+	"fmt"
+	"testing"
+)
+
+// command 命令模式
+// 命令模式是一种行为型设计模式，它允许将请求封装为一个对象，从而使不同请求的调用者能够独立于接收者、请求的内容以及请求的执行方式。
+// 在这个示例中，我们将实现一个库存管理系统，用命令模式来实现买入库存和卖出库存的功能。
+
+// Command 命令接口
+type Command interface {
+	execute()
+}
+
+// Stock 库存
+type Stock struct {
+	quantity int // 库存数量
+}
+
+// NewStock 创建库存
+func NewStock(quantity int) *Stock {
+	return &Stock{quantity: quantity}
+}
+
+// buy 买入库存
+func (s *Stock) buy() {
+	s.quantity++
+	fmt.Println("buy stock, quantity:", s.quantity)
+}
+
+// sell 卖出库存
+func (s *Stock) sell() {
+	if s.quantity <= 0 {
+		fmt.Println("sell stock failed, quantity is 0")
+		return
+	}
+	s.quantity--
+	fmt.Println("sell stock, quantity:", s.quantity)
+}
+
+// BuyStock 买入库存命令
+type BuyStock struct {
+	stock *Stock
+}
+
+// NewBuyStock 创建买入库存命令
+func NewBuyStock(stock *Stock) *BuyStock {
+	return &BuyStock{stock: stock}
+}
+
+// execute 执行命令
+func (b *BuyStock) execute() {
+	b.stock.buy()
+}
+
+// SellStock 卖出库存命令
+type SellStock struct {
+	stock *Stock
+}
+
+// NewSellStock 创建卖出库存命令
+func NewSellStock(stock *Stock) *SellStock {
+	return &SellStock{stock: stock}
+}
+
+// execute 执行命令
+func (s *SellStock) execute() {
+	s.stock.sell()
+}
+
+// Broker 命令调用者
+type Broker struct {
+	orders []Command
+}
+
+// NewBroker 创建Broker
+func NewBroker() *Broker {
+	return &Broker{orders: make([]Command, 0)}
+}
+
+// takeOrder 接收命令
+func (b *Broker) takeOrder(order Command) {
+	b.orders = append(b.orders, order)
+}
+
+// placeOrders 执行命令
+func (b *Broker) placeOrders() {
+	for _, order := range b.orders {
+		order.execute()
+	}
+	// 执行完命令后清空命令列表
+	b.orders = b.orders[:0]
+}
+
+// TestCommand 命令模式测试
+func TestCommand(t *testing.T) {
+	stock := NewStock(1)
+	broker := NewBroker()
+
+	broker.takeOrder(NewBuyStock(stock))
+	broker.takeOrder(NewBuyStock(stock))
+	broker.takeOrder(NewSellStock(stock))
+
+	broker.placeOrders()
+}
+
+```
+
