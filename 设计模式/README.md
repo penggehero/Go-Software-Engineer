@@ -6,7 +6,7 @@
 
 在这种模式中，通常每个接收者都包含对另一个接收者的引用。如果一个对象不能处理该请求，那么它会把相同的请求传给下一个接收者，依此类推。
 
-## 介绍
+### 介绍
 
 **意图：** 避免请求发送者与接收者耦合在一起，让多个对象都有可能接收请求，将这些对象连接成一条链，并且沿着这条链传递请求，直到有对象处理它为止。
 
@@ -172,11 +172,11 @@ func TestChainOfResponsibility(t *testing.T) {
 
 
 
-# 命令模式
+## 命令模式
 
 命令模式（Command Pattern）是一种数据驱动的设计模式，它属于行为型模式。请求以命令的形式包裹在对象中，并传给调用对象。调用对象寻找可以处理该命令的合适的对象，并把该命令传给相应的对象，该对象执行命令。
 
-## 介绍
+### 介绍
 
 **意图：**  将一个请求封装成一个对象，从而使您可以用不同的请求对客户进行参数化。
 
@@ -309,6 +309,253 @@ func TestCommand(t *testing.T) {
 	broker.takeOrder(NewSellStock(stock))
 
 	broker.placeOrders()
+}
+
+```
+
+
+
+## 迭代器模式
+
+迭代器模式（Iterator Pattern）是 Java 和 .Net 编程环境中非常常用的设计模式。这种模式用于顺序访问集合对象的元素，不需要知道集合对象的底层表示。
+
+迭代器模式属于行为型模式。
+
+### 介绍
+
+**意图：** 提供一种方法顺序访问一个聚合对象中各个元素, 而又无须暴露该对象的内部表示。
+
+**主要解决：** 不同的方式来遍历整个整合对象。
+
+**何时使用：** 遍历一个聚合对象。
+
+**如何解决：** 把在元素之间游走的责任交给迭代器，而不是聚合对象。
+
+**关键代码：** 定义接口：hasNext, next。
+
+**应用实例：** JAVA 中的 iterator。
+
+**优点：** 
+1、它支持以不同的方式遍历一个聚合对象。 
+2、迭代器简化了聚合类。 
+3、在同一个聚合上可以有多个遍历。 
+4、在迭代器模式中，增加新的聚合类和迭代器类都很方便，无须修改原有代码。
+
+**缺点：** 由于迭代器模式将存储数据和遍历数据的职责分离，增加新的聚合类需要对应增加新的迭代器类，类的个数成对增加，这在一定程度上增加了系统的复杂性。
+
+**使用场景：**
+1、访问一个聚合对象的内容而无须暴露它的内部表示。 
+2、需要为聚合对象提供多种遍历方式。 
+3、为遍历不同的聚合结构提供一个统一的接口。
+
+**注意事项：**迭代器模式就是分离了集合对象的遍历行为，抽象出一个迭代器类来负责，这样既可以做到不暴露集合的内部结构，又可让外部代码透明地访问集合内部的数据。
+
+```go
+package design_pattern
+
+import (
+	"fmt"
+	"testing"
+)
+
+// 迭代器模式
+// 迭代器模式是一种行为设计模式，让你能在不暴露集合底层表现形式 （列表、 栈和树等）的情况下遍历集合中所有的元素。
+// 在迭代器的帮助下， 客户端可以用一个迭代器接口以相似的方式遍历不同集合中的元素。
+// 这里需要注意的是有两个典型的迭代器接口需要分清楚；
+//  一个是集合类实现的可以创建迭代器的工厂方法接口一般命名为Iterable，包含的方法类似CreateIterator；
+//  另一个是迭代器本身的接口，命名为Iterator，有Next及hasMore两个主要方法；
+
+// Iterator 迭代器接口
+type Iterator interface {
+	HasNext() bool
+	Next() interface{}
+}
+
+// Container 容器接口
+type Container interface {
+	GetIterator() Iterator
+	GetIndex(index int) interface{}
+	Len() int
+}
+
+// NameIterator 名字迭代器
+type NameIterator struct {
+	container Container
+	index     int
+}
+
+// HasNext 是否有下一个
+func (n *NameIterator) HasNext() bool {
+	if n.index < n.container.Len() {
+		return true
+	}
+	return false
+}
+
+// Next 下一个
+func (n *NameIterator) Next() interface{} {
+	if n.HasNext() {
+		n.index++
+		return n.container.GetIndex(n.index - 1)
+	}
+	return nil
+}
+
+// NameRepository 名字容器
+type NameRepository struct {
+	iterator *NameIterator
+	names    []string
+}
+
+// GetIterator 获取迭代器
+func (n *NameRepository) GetIterator() Iterator {
+	return &NameIterator{
+		container: n,
+		index:     0,
+	}
+}
+
+// GetIndex 获取指定索引的元素
+func (n *NameRepository) GetIndex(index int) interface{} {
+	return n.names[index]
+}
+
+// Len 获取长度
+func (n *NameRepository) Len() int {
+	return len(n.names)
+}
+
+// AddName 添加名字
+func (n *NameRepository) AddName(s string) {
+	n.names = append(n.names, s)
+}
+
+// NewNameRepository 创建名字容器
+func NewNameRepository() *NameRepository {
+	n := new(NameRepository)
+	n.iterator = &NameIterator{n, 0}
+	n.names = make([]string, 0)
+	return n
+}
+
+// TestIterator 迭代器模式测试
+func TestIterator(t *testing.T) {
+	nameRepository := NewNameRepository()
+	nameRepository.AddName("Robert")
+	nameRepository.AddName("John")
+	nameRepository.AddName("Julie")
+	nameRepository.AddName("Lora")
+	iterator := nameRepository.GetIterator()
+	for iterator.HasNext() {
+		name := iterator.Next().(string)
+		fmt.Println("Name : " + name)
+	}
+
+	iterator2 := nameRepository.GetIterator()
+	for iterator2.HasNext() {
+		name := iterator2.Next().(string)
+		fmt.Println("Name : " + name)
+	}
+
+	iterator3 := nameRepository.GetIterator()
+	for iterator3.HasNext() {
+		name := iterator3.Next().(string)
+		fmt.Println("Name : " + name)
+	}
+}
+
+```
+
+
+
+## 中介者模式
+
+是一种行为设计模式，能让你减少对象之间混乱无序的依赖关系。该模式会限制对象之间的直接交互，迫使它们通过一个中介者对象进行合作，将网状依赖变为星状依赖。
+
+中介者能使得程序更易于修改和扩展，而且能更方便地对独立的组件进行复用，因为它们不再依赖于很多其他的类。
+
+中介者模式与观察者模式之间的区别是，中介者模式解决的是同类或者不同类的多个对象之间多对多的依赖关系，观察者模式解决的是多个对象与一个对象之间的多对一的依赖关系
+
+```go
+package design_pattern
+
+import (
+	"fmt"
+	"testing"
+)
+
+// 中介者模式
+// 中介者模式是一种行为设计模式， 让你可以减少对象之间混乱无序的依赖关系。
+// 该模式会限制对象之间的直接交互， 强迫它们通过一个中介者对象进行合作。
+// 通过将对象彼此解耦， 也可更方便地对它们进行独立复用。
+// 该模式会将系统中的对象分为两组： 具体组件（也就是有用的对象） 和中介者对象（负责协调具体组件之间的交互）。
+// 由于组件之间几乎不知道彼此的存在， 所以它们必须通过中介者对象进行间接交流。
+// 但是有一点需要注意， 中介者本身并不处理业务逻辑， 而只负责维护组件之间的关系。
+//
+
+// Mediator 中介者接口
+type Mediator interface {
+	// Send 发送消息
+	Send(message string, user User)
+}
+
+// User 用户
+type User struct {
+	name     string
+	mediator Mediator
+}
+
+// NewUser 创建用户
+func NewUser(name string, mediator Mediator) *User {
+	return &User{name: name, mediator: mediator}
+}
+
+// GetName 获取用户名字
+func (u *User) GetName() string {
+	return u.name
+}
+
+// Send 发送消息
+func (u *User) Send(message string) {
+	u.mediator.Send(message, *u)
+}
+
+// ChatRoom 聊天室
+type ChatRoom struct {
+	users []*User
+}
+
+// NewChatRoom 创建聊天室
+func NewChatRoom() *ChatRoom {
+	return &ChatRoom{users: make([]*User, 0)}
+}
+
+// Register 注册用户
+func (c *ChatRoom) Register(user *User) {
+	c.users = append(c.users, user)
+}
+
+// Send 发送消息
+func (c *ChatRoom) Send(message string, user User) {
+	for _, u := range c.users {
+		if u.GetName() != user.GetName() {
+			fmt.Printf("%s send message to %s: %s\n", user.GetName(), u.GetName(), message)
+		}
+	}
+}
+
+func TestMediator(t *testing.T) {
+	chatRoom := NewChatRoom()
+	user1 := NewUser("user1", chatRoom)
+	user2 := NewUser("user2", chatRoom)
+	user3 := NewUser("user3", chatRoom)
+	chatRoom.Register(user1)
+	chatRoom.Register(user2)
+	chatRoom.Register(user3)
+	user1.Send("hello")
+	// Output:
+	// user1 send message to user2: hello
+	// user1 send message to user3: hello
 }
 
 ```
