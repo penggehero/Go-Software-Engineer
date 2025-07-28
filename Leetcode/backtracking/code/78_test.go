@@ -16,7 +16,35 @@ package code
 
 */
 
+// 子集问题是求树的全部节点
 func subsets(nums []int) [][]int {
+	var ret [][]int
+	var arr []int
+	n := len(nums)
+	var dfs func(index int)
+	dfs = func(index int) {
+		// 每次选择，把路径保存
+		ret = append(ret, append([]int{}, arr...))
+		if index >= n {
+			return
+		}
+		for i := index; i < n; i++ {
+			// 选i
+			arr = append(arr, nums[i])
+
+			// 选下一个位置
+			dfs(i + 1)
+
+			// 撤销选i
+			arr = arr[:len(arr)-1]
+		}
+	}
+	dfs(0)
+	return ret
+
+}
+
+func subsets2(nums []int) [][]int {
 	var ans [][]int
 	var t []int
 
